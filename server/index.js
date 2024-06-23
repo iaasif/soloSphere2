@@ -37,7 +37,6 @@ async function run() {
     const bidsCollection = client.db("soloSphere").collection("bids");
 
     //jwt making generate
-    
 
     // Get all jobs data from db
     app.get("/jobs", async (req, res) => {
