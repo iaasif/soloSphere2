@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import bgImg from "../../assets/images/login.jpg";
 import logo from "../../assets/images/logo.png";
+import axios from "axios";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import toast from "react-hot-toast";
@@ -21,7 +22,18 @@ const Login = () => {
   // Google Signin
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      // jwt emplimantation
+      console.log(result?.user);
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/jwt`,
+        {
+          email: result?.user?.email,
+        },
+        //for save in browser
+        { withCredentials: true }
+      );
+      console.log("data form log in token-->", data);
       toast.success("Signin Successful");
       navigate(from, { replace: true });
     } catch (err) {
@@ -40,6 +52,17 @@ const Login = () => {
     try {
       //User Login
       const result = await signIn(email, pass);
+
+      console.log(result?.user);
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/jwt`,
+        {
+          email: result?.user?.email,
+        },
+        //for save in browser
+        { withCredentials: true }
+      );
+      console.log("data form log in token-->", data);
       console.log(result);
       navigate(from, { replace: true });
       toast.success("Signin Successful");

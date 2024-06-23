@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
@@ -37,6 +40,38 @@ async function run() {
     const bidsCollection = client.db("soloSphere").collection("bids");
 
     //jwt making generate
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "365d",
+      });
+
+      // res.send({ token });
+      //respond sending to cookie and saving them with name and value;
+      res
+        .cookie("token", token, {
+          // options must needed for saving the cookies
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
+    //jwt token genaration done
+
+    //clearing token when logout
+    app.get("/logout", (req, res) => {
+      res
+        .clearCookie("token", {
+          // options must needed for saving the cookies
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ success: true });
+    });
 
     // Get all jobs data from db
     app.get("/jobs", async (req, res) => {
