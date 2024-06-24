@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { decrypt } = require("dotenv");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
 const app = express();
@@ -19,6 +20,32 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
+
+//making middleware for jwt
+// this is for varify purpose
+
+const verifyToken = (req, res, next) => {
+  console.log("this is middleware funtion yoo!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  const token = req.cookies?.token;
+  console.log(token, "------>me token");
+  // varifing token
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send({ message: "unauthorized access" });
+        //return
+      }
+      console.log(decoded);
+      req.user = decoded;
+      next();
+    });
+  }
+};
 
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mq0mae1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
@@ -104,8 +131,15 @@ async function run() {
     });
 
     // get all jobs posted by a specific user
-    app.get("/jobs/:email", async (req, res) => {
+    app.get("/jobs/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
+
+      console.log(tokenEmail, "---------->from token");
       const email = req.params.email;
+
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbiden access" });
+      }
       const query = { "buyer.email": email };
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
@@ -119,7 +153,7 @@ async function run() {
     });
 
     // update a job in db
-    app.put("/job/:id", async (req, res) => {
+    app.put("/job/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const jobData = req.body;
       const query = { _id: new ObjectId(id) };
@@ -135,7 +169,7 @@ async function run() {
 
     //getting all bids db using email from user
 
-    app.get("/my-bids/:email", async (req, res) => {
+    app.get("/my-bids/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email }; //if in a object a query and a value is same , we just use one
       const result = await bidsCollection.find(query).toArray();
@@ -144,7 +178,7 @@ async function run() {
 
     //get all bids same user
 
-    app.get("/bid-requests/:email", async (req, res) => {
+    app.get("/bid-requests/:email", verifyToken,  async (req, res) => {
       const email = req.params.email;
       const query = { "buyer.email": email }; //if in a object a query and a value is same , we just use one
       const result = await bidsCollection.find(query).toArray();
