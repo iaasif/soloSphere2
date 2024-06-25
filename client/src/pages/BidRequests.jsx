@@ -1,32 +1,71 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
 import axios, { Axios } from "axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../hooks/useAxiosSecure";
+import useAuth from "../hooks/useAuth";
+import { toast } from "react-hot-toast";
 
 const BidRequests = () => {
-  const { user } = useContext(AuthContext);
-  const [bids, setBids] = useState([]);
-  useEffect(() => {
-    getData();
-  }, [user]);
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
+  //tan stack query
+  //query function
+  const {
+    data: bids = [],
+    isLoading,
+    refetch,
+    isError,
+    error,
+  } = useQuery({
+    queryFn: () => getData(),
+    queryKey: ["bids"],
+  });
+  console.log(bids, "<----using tanstack");
+
+  // const [bids, setBids] = useState([]);
+  // useEffect(() => {
+  //   getData();
+  // }, [user]);
 
   const getData = async () => {
-    const { data } = await axios(
-      `${import.meta.env.VITE_API_URL}/bid-requests/${user?.email}`
-    );
+    const { data } = await axiosSecure(`/bid-requests/${user?.email}`);
     setBids(data);
   };
 
+  //for change in data and send it to server usemuitation in tanstack query
+  // similar to patch and put ,
+
+  const { mutate, mutateAsync } = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const { data } = await axiosSecure.patch(`/bid/${id}`, { status });
+      console.log("using mutation funtion-------->", data);
+    },
+    onSuccess: () => {
+      console.log("on success funtion----->");
+      toast.success("updated");
+      //update ui or refresh
+      refetch();
+    },
+  });
+
+  //handlestatus
   const handleStatus = async (id, prevStatus, status) => {
     console.log(id, prevStatus, status);
     if (prevStatus === status) return console.log("sorry bro");
 
-    const { data } = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/bid/${id}`,
-      { status }
-    );
+    // getData();
 
-    getData();
+    await mutateAsync({
+      id,
+      status,
+    });
   };
+
+  if (isLoading) return <p>data is loading using tanstack query</p>;
+  if (isError || error) {
+    console.log("error using tanstack------>", isError, error);
+  }
 
   return (
     <section className="container px-4 mx-auto pt-12">

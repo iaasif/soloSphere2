@@ -15,7 +15,7 @@ const useAxiosSecure = () => {
   //interceptor
   axiosSecure.interceptors.response.use(
     (res) => {
-      console.log("i am form interceptor --->> ",res);
+      // console.log("i am form interceptor --->> ",res);
       return res;
     },
     async (error) => {
