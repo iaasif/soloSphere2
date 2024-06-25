@@ -68,8 +68,8 @@ async function run() {
 
     //jwt making generate
     app.post("/jwt", async (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      const email = req.body;
+      const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "365d",
       });
 
