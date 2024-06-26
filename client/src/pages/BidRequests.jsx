@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
 import axios, { Axios } from "axios";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 import useAuth from "../hooks/useAuth";
 import { toast } from "react-hot-toast";
@@ -9,6 +9,8 @@ import { toast } from "react-hot-toast";
 const BidRequests = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
   //tan stack query
   //query function
   const {
@@ -19,7 +21,7 @@ const BidRequests = () => {
     error,
   } = useQuery({
     queryFn: () => getData(),
-    queryKey: ["bids"],
+    queryKey: ["bids", user?.email],
   });
   console.log(bids, "<----using tanstack");
 
@@ -45,7 +47,13 @@ const BidRequests = () => {
       console.log("on success funtion----->");
       toast.success("updated");
       //update ui or refresh
-      refetch();
+      // refetch();
+
+      // alternate option of refetch
+      //this will refetch all the website bids data invalidateQueries
+      queryClient.invalidateQueries({
+        queryKey: ["bids"],
+      });
     },
   });
 
