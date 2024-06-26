@@ -5,7 +5,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import toast from "react-hot-toast";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 const JobDetails = () => {
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState(new Date());
   const { user } = useContext(AuthContext);
@@ -36,7 +38,7 @@ const JobDetails = () => {
     const email = user?.email;
     // const buyer_email = buyer_email
     const status = "Pending";
-    toast.success("your bid is added");
+    // toast.success("your bid is added");
 
     const bidData = {
       jobId,
@@ -50,17 +52,18 @@ const JobDetails = () => {
       status,
       buyer,
     };
+
     try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/bid`,
-        bidData
-      );
+      const { data } = await axiosSecure.post(`/bid`, bidData);
       console.log(data);
-      toast.success("bid done");
+      toast.success("your bid is added");
       navigate("/my-bids");
     } catch (err) {
       console.log(err);
+      console.log(err.response.data);
       console.log("Hi, i am error", err.message);
+      toast.error(err.response.data);
+      e.target.reset();
     }
   };
 
