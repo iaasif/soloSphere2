@@ -4,12 +4,14 @@ import axios from "axios";
 
 const AllJobs = () => {
   const [itemPerPage, setItemPerPage] = useState(2);
-  const [currentPage,setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const [jobs, setJobs] = useState([]);
   useEffect(() => {
     const getData = async () => {
-      const { data } = await axios(`${import.meta.env.VITE_API_URL}/all-jobs`);
+      const { data } = await axios(
+        `${import.meta.env.VITE_API_URL}/all-jobs?page=${currentPage}&size=${itemPerPage}`
+      );
       setJobs(data);
       setCount(data.length);
     };
@@ -35,6 +37,11 @@ const AllJobs = () => {
   // dynamic array page number
   const pages = [...Array(numberOfPages).keys()].map((element) => element + 1);
 
+  // handle pagination button
+  const handlePaginationButton = (value) => {
+    console.log(value);
+    setCurrentPage(value);
+  };
   return (
     <div className="container px-6 py-10 mx-auto min-h-[calc(100vh-306px)] flex flex-col justify-between">
       <div>
@@ -113,6 +120,7 @@ const AllJobs = () => {
         {/* page number  */}
         {pages.map((btnNum) => (
           <button
+            onClick={() => handlePaginationButton(btnNum)}
             key={btnNum}
             className={`hidden px-4 py-2 mx-1 transition-colors duration-300 transform  rounded-md sm:inline hover:bg-blue-500  hover:text-white`}
           >

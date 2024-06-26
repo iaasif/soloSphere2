@@ -3,7 +3,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId, CURSOR_FLAGS } = require("mongodb");
 const { decrypt } = require("dotenv");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
@@ -212,6 +212,9 @@ async function run() {
 
     // Get all jobs data from db for pagination
     app.get("/all-jobs", async (req, res) => {
+      const size = req.query.size;
+      const page = req.query.page;
+      console.log(size,page,"----->size page ")
       const result = await jobsCollection.find().toArray();
 
       res.send(result);
@@ -223,7 +226,7 @@ async function run() {
       // similar
       const count = await jobsCollection.countDocuments();
 
-      res.send({count});
+      res.send({ count });
     });
 
     // Send a ping to confirm a successful connection
