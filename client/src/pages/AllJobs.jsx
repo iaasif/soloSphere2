@@ -15,12 +15,12 @@ const AllJobs = () => {
       const { data } = await axios(
         `${
           import.meta.env.VITE_API_URL
-        }/all-jobs?page=${currentPage}&size=${itemPerPage}&filter=${filter}`
+        }/all-jobs?page=${currentPage}&size=${itemPerPage}&filter=${filter}&sort=${sort}`
       );
       setJobs(data);
     };
     getData();
-  }, [currentPage, itemPerPage, filter]);
+  }, [currentPage, itemPerPage, filter, sort]);
 
   useEffect(() => {
     const getCount = async () => {
@@ -46,6 +46,7 @@ const AllJobs = () => {
     console.log(value);
     setCurrentPage(value);
   };
+  
   return (
     <div className="container px-6 py-10 mx-auto min-h-[calc(100vh-306px)] flex flex-col justify-between">
       <div>
