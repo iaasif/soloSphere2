@@ -221,12 +221,18 @@ async function run() {
       const page = parseInt(req.query.page) - 1;
       const filter = req.query.filter;
       const sort = req.query.sort;
+      const search = req.query.search;
 
       // console.log(size, page, "----->size page ");
 
-      let query = {};
+      let query = {
+        job_title: { $regex: search, $options: "i" },
+      };
       //for this line of understanding , look at the original json data where category is filter variable
-      if (filter) query = { category: filter };
+      if (filter) query.category = filter;
+
+      //similar line
+      // if (filter) query = { ...query, category: filter };
 
       let options = {};
       if (sort) options = { sort: { deadline: sort === "asc" ? 1 : -1 } };
@@ -244,7 +250,11 @@ async function run() {
       // const result = await jobsCollection.find().estimatedDocumentCount();
       // similar
       const filter = req.query.filter;
-      let query = {};
+      const search = req.query.search;
+
+      let query = {
+        job_title: { $regex: search, $options: "i" },
+      };
       //for this line of understanding , look at the original json data where category is filter variable
       if (filter) query = { category: filter };
       const count = await jobsCollection.countDocuments(query);

@@ -9,29 +9,33 @@ const AllJobs = () => {
   const [count, setCount] = useState(0);
   const [sort, setSort] = useState("");
   const [jobs, setJobs] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     const getData = async () => {
       const { data } = await axios(
         `${
           import.meta.env.VITE_API_URL
-        }/all-jobs?page=${currentPage}&size=${itemPerPage}&filter=${filter}&sort=${sort}`
+        }/all-jobs?page=${currentPage}&size=${itemPerPage}&filter=${filter}&sort=${sort}&search=${search}`
       );
       setJobs(data);
     };
     getData();
-  }, [currentPage, itemPerPage, filter, sort]);
+  }, [search, currentPage, itemPerPage, filter, sort]);
 
   useEffect(() => {
     const getCount = async () => {
       const { data } = await axios(
-        `${import.meta.env.VITE_API_URL}/jobs-count?filter=${filter}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/jobs-count?filter=${filter}&search=${search}`
       );
       setCount(data.count);
       console.log(data.count, "<-----count data");
     };
     getCount();
-  }, [filter]);
+  }, [filter, search]);
 
   // console.log("all jobs --->", jobs);
   console.log("count --->", count);
@@ -41,12 +45,27 @@ const AllJobs = () => {
   // dynamic array page number
   const pages = [...Array(numberOfPages).keys()].map((element) => element + 1);
 
-  // handle pagination button
+  // handle pagination button------------------------------
   const handlePaginationButton = (value) => {
     console.log(value);
     setCurrentPage(value);
   };
-  
+  //reset-------------------------------------------------
+  const handleReset = () => {
+    setFilter("");
+    setSort("");
+
+    setSearch("");
+    setSearchText("");
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // const text = e.target.search.value;
+    // setSearch(text);
+    setSearch(searchText);
+  };
+
   return (
     <div className="container px-6 py-10 mx-auto min-h-[calc(100vh-306px)] flex flex-col justify-between">
       <div>
@@ -69,9 +88,11 @@ const AllJobs = () => {
             </select>
           </div>
 
-          <form>
+          <form onSubmit={handleSearch}>
             <div className="flex p-1 overflow-hidden border rounded-lg    focus-within:ring focus-within:ring-opacity-40 focus-within:border-blue-400 focus-within:ring-blue-300">
               <input
+                onChange={(e) => setSearchText(e.target.value)}
+                value={searchText}
                 className="px-6 py-2 text-gray-700 placeholder-gray-500 bg-white outline-none focus:placeholder-transparent"
                 type="text"
                 name="search"
@@ -99,7 +120,9 @@ const AllJobs = () => {
               <option value="asc">Ascending Order</option>
             </select>
           </div>
-          <button className="btn">Reset</button>
+          <button onClick={handleReset} className="btn">
+            Reset
+          </button>
         </div>
         <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-16 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {jobs.map((job) => (
