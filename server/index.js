@@ -3,7 +3,12 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
-const { MongoClient, ServerApiVersion, ObjectId, CURSOR_FLAGS } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  CURSOR_FLAGS,
+} = require("mongodb");
 const { decrypt } = require("dotenv");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
@@ -212,10 +217,21 @@ async function run() {
 
     // Get all jobs data from db for pagination
     app.get("/all-jobs", async (req, res) => {
-      const size = req.query.size;
-      const page = req.query.page;
-      console.log(size,page,"----->size page ")
-      const result = await jobsCollection.find().toArray();
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+      const filter = req.query.filter;
+
+      // console.log(size, page, "----->size page ");
+
+      let query = {};
+      //for this line of understanding , look at the original json data where category is filter variable
+      if (filter) query = { category: filter };
+
+      const result = await jobsCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
 
       res.send(result);
     });
@@ -224,7 +240,11 @@ async function run() {
     app.get("/jobs-count", async (req, res) => {
       // const result = await jobsCollection.find().estimatedDocumentCount();
       // similar
-      const count = await jobsCollection.countDocuments();
+      const filter = req.query.filter;
+      let query = {};
+      //for this line of understanding , look at the original json data where category is filter variable
+      if (filter) query = { category: filter };
+      const count = await jobsCollection.countDocuments(query);
 
       res.send({ count });
     });
