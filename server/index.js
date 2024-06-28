@@ -1,4 +1,5 @@
 const express = require("express");
+import UpdateJob from "../client/src/pages/UpdateJob";
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
@@ -134,8 +135,19 @@ async function run() {
         return res.status(400).send("you already place a bid for this job ");
       }
       const result = await bidsCollection.insertOne(bidData);
+      //update bid collection  count in job collection
+      const updateDoc = {
+        $inc: { bid_count: 1 },
+      };
+      const jobQuery = { _id: new ObjectId(bidData.jobId) };
+      const updateBidCount = await jobsCollection.updateOne(
+        jobQuery,
+        updateDoc
+      );
+
       res.send(result);
     });
+
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
     // Save a job data in db
